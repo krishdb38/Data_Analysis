@@ -180,3 +180,9 @@ new_array = array(c(vector, vector2), dim = c(3,3,2))
 ##R-packages
 .libPaths()
 library()
+
+
+
+
+
+
