@@ -1,0 +1,616 @@
+---
+title: "R_from"
+author: "Krishna"
+date: '2020 6 19 '
+output: ioslides_presentation
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r}
+HR = read.csv("HR_comma_sep.csv")
+```
+
+
+```{r}
+head(HR)
+```
+
+```{r}
+class(HR)
+```
+
+```{r}
+colnames(HR)
+```
+
+
+```{r}
+dim(HR)
+```
+
+
+```{r}
+getwd()
+```
+
+
+
+```{r}
+summary(HR)
+```
+
+
+```{r}
+# Change Data String
+HR$Work_accident = as.factor(HR$Work_accident)
+HR$left = as.factor(HR$left)
+HR$promotion_last_5years = as.factor(HR$promotion_last_5years)
+summary(HR$left)
+
+```
+
+
+```{r}
+## Extract data according to Conditions
+# Create a new Column name satisfaction_level_group_1 data where satisfaction level is greater than 0.5 as High else Low
+HR$satisfaction_level_group_1 = ifelse(HR$satisfaction_level>0.5,"High","low")
+head(HR,3)
+```
+
+
+```{r}
+## Create a new column named satisfaction_level_group2 where condition
+##  High if >0.8, Mid if in range 0.5~0.8 else Low
+
+HR$satisfaction_level_group2 = ifelse(HR$satisfaction_level>0.8, "High", ifelse(HR$satisfaction_level >0.5,"Mid", "Low"))
+head(HR,3)
+```
+
+
+```{r}
+## Create a new data set called HR_High by extracting only employees with High salary
+HR_high = subset(HR, salary == "high")
+# salary is the column Name in Data Frame
+HR_high
+
+```
+
+
+```{r}
+## Extracting only employees whose salary is high and the department is IT (intersection)
+HR_high_it = subset(HR,salary =="high" & department == "IT")
+head(HR_high_it)
+```
+
+
+```{r}
+## High salary or department IT (union) OR COndition
+HR_high_it2 = subset(HR, salary == "high" | department =="IT")
+head(HR_high_it2)
+
+```
+
+
+```{r}
+## Create aggregated data
+## Like Pivot table
+
+#install.packages("plyr")
+library(plyr)
+SS=ddply(HR, # SS라는 새로운 데이터 셋을 생성
+     c("department","salary"),summarise, # department, salary 별로 요약값들을 계산
+     M_SF=mean(satisfaction_level), # satisfaction_level의 평균 계산
+     COUNT=length(department), # department, salary 별로 직원 수 Counting
+     M_WH=round(mean(average_montly_hours),2)) # average_montly_hours 평균 계산
+# round( , 2)는 소수점 2째자리까지 끊어서 표현하는 함수
+head(SS)
+```
+```{r}
+## Visualization of Data
+### ggplot2 basic grammar
+### bar Chart
+### Histogram
+### Density graph
+### Box Plot
+### Scatter
+
+
+### GGplot2 Basic Grammer
+
+### ggplot is the start command of ggplot2 where you set the data and variables to graph
+### aes  is abbreviation of aesthetic, and when setting a variable in the graph, it must be contained in aes
+
+
+## Draw a graph --> 
+### geom_histogram() --> draw a histogram (Continous data set)
+### geom_bar() --> bar chart
+### geom_histogram() --> Histogram
+### geom_boxplot() --> boxplot--> will draw a box plot
+### geom_line() --> will draw a line graph
+
+## Modify other options to elaborately draw the graph
+#### labs(), edit legent title
+#### ggtitle() , Edit Title
+#### xlabs(), ylabs() --> x-axis y-axis name correction
+
+
+```
+
+
+```{r}
+## bar plot
+## load the data set
+library(ggplot2)
+HR = read.csv("HR_comma_sep.csv")
+head
+HR$Work_accident == as.factor(HR$Work_accident)
+HR$left = as.factor(HR$left)
+HR$promotion_last_5years = as.factor(HR$promotion_last_5years)
+
+
+#ggplot(HR,aes(x = salary))+geom_bar() # Simple plot
+
+#ggplot(HR, aes(x = salary)) + geom_bar(fill= "gold")
+
+ggplot(HR, aes(x = salary)) +
+  geom_bar(aes(fill = left)) + 
+  labs("Divided by left") +
+  xlab("Salary") +
+  ylab("Amount")
+
+```
+
+
+```{r}
+head(HR)
+## Histo gram
+## For Histogram we need Continous data series
+ggplot(HR, aes(x = satisfaction_level)) + 
+  geom_histogram(binwidth = 0.01, col = "red", fill = "blue" )
+  
+```
+
+
+```{r}
+## Density Graph
+ggplot (HR, aes(x = satisfaction_level))+ geom_density(col= "red", fill = "gold")
+
+
+```{r}
+## Box Plot
+ggplot(HR, aes(x = left, y = satisfaction_level))+
+  geom_boxplot(aes(file = left), alpha = (0.4)) +
+  xlab("Transfer Rate") + ylab("Satisfaction") + ggtitle("Box Plot")
+```
+
+
+```{r}
+## Scatter Plot
+ggplot(HR, aes(x = average_montly_hours, y = satisfaction_level)) + geom_point(aes(col = left))
+```
+
+
+```{r}
+## Basic Grammer
+# 1. Loading the data
+imdb = read.csv("IMDB-Movie-Data.csv")
+head(imdb)
+
+```
+
+
+```{r}
+str(imdb)
+```
+
+```{r}
+dim(imdb)
+```
+```{r}
+colnames(imdb)
+```
+
+
+```{r}
+## 1. Treatment of missing Values
+sum(is.na(imdb)) # There are 192 na values inside data frame
+sum(is.na(imdb$Title))
+```
+
+
+```{r}
+colSums(is.na(imdb))
+```
+
+
+```{r}
+imdb2 = na.omit(imdb) # Omit na value
+head(imdb2)
+colSums(is.na(imdb2)) # Check the na value is or not in the data Frame
+```
+
+
+```{r}
+## Specify 58.99 for values (missing values) where is.na is True
+imdb$Metascore2 = imdb$Metascore
+imdb$Metascore[is.na(imdb$Metascore2)] = 58.99
+sum(is.na(imdb$Metascore2))
+
+```
+
+
+```{r}
+mean(imdb$Revenue..Millions) # Na because of na value
+
+# So ignore na value
+
+mean(imdb$Revenue..Millions.,na.rm = T) #in R True is Error
+```
+```{r}
+summary(imdb$Revenue..Millions.)
+```
+
+
+```{r}
+ggplot(imdb, aes(x= Revenue..Millions.)) + geom_histogram(fill = "blue") +
+  ylab("") + xlab("Revenue_Millions")
+```
+
+
+```{r}
+## Extracting Outliers
+## Outliers have the following characteristics
+##### It has a huge impact on the average.
+##### The mean of [1,2,3,4,5] is 3 but the mean of [1,2,3,500 ] is quite different
+##### But the median is equal 3
+##### Therefore, it is often more realistic to represent the summary values in the median rather than the average values
+##### The outlilers are calculated as follows
+
+ggplot(imdb, aes(x = as.factor(Year), y = Revenue..Millions.)) + geom_boxplot(aes(fill = as.factor(Year)), outlier.color = "red", alpha = I(0.4))
+
+```
+
+
+```{r}
+### Box plot are drawn based on quantiles
+### The straight line drawn in the box represents the median
+### The bottom side of the box represents the first quartile and the top side represents the third quartile.
+### You can see that there is a straight line up and down around the box
+#### The straight line is called Fence
+### Calcualtion formula of the lower straight line from  the box Q1-1.5 *(Q3- Q1)
+### Out liers are basically hindrance to statistical estimation
+### Statistical  analysis is all inductive, because special cases like outliers interfere with maiking rules.
+
+```
+
+
+```{r}
+## handling String data Part 1 
+## ( String extraction / paste / separation / replacement)
+
+## String replacement : gsub()
+## String separation  :strsplit()
+## string concatenation paste()
+## String extractio : substr()
+## Text mining functions Corpus() & tm_map() & tdm()
+
+```
+
+
+```{r}
+# String Extraction
+substr("Hello THis is ",1,5) # str, start & End
+substr(imdb$Actors[1],1,5)
+```
+
+
+```{r}
+# Pasting a string
+paste("Hello","My","name","is Krish")
+paste(imdb$Actors[0],"test", sep = "-->>")
+```
+```{r}
+imdb$Genre2 = gsub(",", " ", imdb$Genre)
+```
+
+
+
+```{r}
+# Text Mining 
+# The procedure of Text Mining is as follows
+## Create corpus
+## Create Document matrix
+## Character processing(removal of special characters, removal of investigation , removal of numbers, etc...)
+## Create string variable
+
+
+## Create Corpus
+## In the case of English, upper and lower case letters are recognized as different letters, so it is necessary to change them
+head(imdb$Genre2)
+```
+
+
+```{r}
+#install.packages("tm") # text mining
+library(tm)
+corpus = Corpus(VectorSource(imdb$Genre2))
+corpus[1]
+```
+
+
+```{r}
+corpus_tm = tm_map(corpus, removePunctuation)
+corpus_tm = tm_map(corpus_tm, removeNumbers)
+corpus_tm = tm_map(corpus_tm, tolower)
+corpus_tm
+```
+
+
+```{r}
+## Step 2 : Create document matrix
+### The reasons for creating a document matrix are as follows
+#### Purpose fo making certain words variable and use them for analysis
+#### Purpose of analyzing wheather data that contains a specific word is extracted separately or when a specific word appears many times
+#### it is correlated with something else
+
+
+## In other words, think of it as preparation process for statistical analysis with string data.
+tdm = DocumentTermMatrix(corpus_tm)
+inspect(tdm)
+```
+
+
+```{r}
+tdm = as.data.frame(as.matrix(tdm))
+head(tdm)
+```
+
+
+```{r}
+## Combine with existing data
+imdb_genre = cbind(imdb, tdm)
+head(imdb_genre)
+
+```
+
+
+```{r}
+## Combining data commands
+# - cbind : Combine rows (variables) when the rows are the same and the order is the same 
+# rbind : merges down when the columns are the same and the order is the same 
+# merge : Used when two data sets with different columns and rows are combined by one criterion
+```
+
+
+```{r}
+## Remove 
+ # Duplication of words
+ # Investigations, verbs, and nouns
+
+# Remove Words using stopwords
+library(tm)
+corpus = Corpus(VectorSource(imdb$Description))
+corpus_tm = tm_map(corpus, stripWhitespace)
+corpus_tm = tm_map(corpus_tm, removePunctuation) # Remove the Punctutaion
+corpus_tm = tm_map(corpus_tm, removeNumbers)  # Remove the Number
+corpus_tm = tm_map(corpus_tm, tolower)
+
+dtm = DocumentTermMatrix(corpus_tm)
+inspect(dtm)
+
+```
+
+
+```{r}
+# And, for, from, with These are frequently used words, but they are not really words that convey meaning.
+# There fore, in text_mining removing these Words can make analysis smooth
+corpus_tm  = tm_map(corpus_tm, removeWords, c(stopwords("english"),"my","custom", "words"))
+inspect(corpus_tm)
+
+# You can delete all words like and his by using the stopwords functions. Furthermore, you can delete words you want to delete by placing them in the c()
+# command. Currently "my", "custom", and "words" have deleted three additional words.
+
+
+```
+
+
+```{r}
+# Step 2 : Determining Duplicate Apperance Word Processing
+
+# 1st: mark whether a specific word is included or not in a sentence -> Coding as 0 or 1
+# (0:included x, 1:included 0)
+convert_count  = function(x){
+  y = ifelse(x>0,1,0)
+  y = as.numeric(y)
+  y
+}
+
+```
+
+
+```{r}
+## 2nd Eye, How many times a specific word appeared in a sentence
+# Coding by frequency of apperance
+convert_count = function(x) {
+  y = ifelse(x >0,x,0)
+  y = as.numeric(y)
+  y
+}
+```
+```{r}
+## Apply User Function
+descript_imdb = apply(dtm, MARGIN = 2, convert_count)
+descript_imdb = as.data.frame(descript_imdb)
+head(descript_imdb)
+```
+
+
+```{r}
+## Visualize string data
+## TEmr Document Matrix create
+tdm  = TermDocumentMatrix(corpus_tm)
+
+# Create Word Cloud
+m = as.matrix(tdm)
+v = sort(rowSums(m), decreasing = T) # Sort in descending order by Frequency
+d = data.frame(word = names(v), freq = v) # Create data frame
+library("SnowballC")
+library("wordcloud")
+library("RColorBrewer")
+
+wordcloud(words = d$word, freq = d$freq, min.freq = 5, max.words = 200, random.order = F, colors = brewer.pal(8,"Dark2"))
+
+```
+
+
+```{r}
+## Most frequent words
+barplot(d[1:10])
+```
+
+
+```{r}
+# Intermediate Grammer Level 1
+## Core packages and functions used in R
+
+# 1. dplyr package and %>% utiliztion
+# 2. Remove duplicate data
+# 3. Data structure transformation using Reshape packages
+# 4. Merging data
+
+```
+```{r}
+library(dplyr)
+library(reshpe)
+
+```
+
+
+```{r}
+# Loading the data
+HR = read.csv("HR_comma_sep.csv")
+head(HR)
+```
+
+
+```{r}
+# Introduction to the apply Funtion and dplyr packages
+## The function called apply is a function found in a lot of code
+## It is written in the format of apply(data, 1 , function). In the case of 1, the function is applied by row (row), and in case of 2, the function is applied by column
+
+## the apply(HR[,1:2],1,mean) code can be simply replaced by a simple function of rowMeans
+## You can check that the result is the same
+
+print("apply")
+head(apply(HR[,1:2],1,mean))
+
+print("Row Means")
+head(rowMeans(HR[,1:2]))
+
+```
+
+
+```{r}
+# The dplyr package is widely used because it has the following features
+# %>% (ctrl + shift + m) This is called pipeline. The use is as follows
+
+HR[,1:2] %>% 
+  rowMeans() %>% head()# All Rows and Column 1 & 2
+
+```
+
+
+```{r}
+print("apply")
+apply(HR[,1:5], 2, mean)
+```
+
+
+```{r}
+print(colMeans(HR[,1:5]))
+```
+
+
+```{r}
+HR[,1:5] %>% colMeans()
+```
+
+
+```{r}
+# 2 different Method
+
+# Summarize
+ summarise(HR, MEAN_SATISFACTION = mean(satisfaction_level),
+           MAX_SATISFACTION = max(satisfaction_level),
+           N = length(satisfaction_level))
+
+## Method 2
+summarise(MEAN_SATISFACTION  = mean(satisfaction)
+
+```
+
+
+```{r}
+
+
+```
+
+
+```{r}
+```
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+## Data ConversionUsing Reshape package
+library(reshape)
+df = read.csv("Reshape.csv")
+head(df)
+```
+
+
+```{r}
+cast_data = cast(df,OBS + NAME + ID + DATE ~ TEST ) # data frame Plus Column Name
+head(cast_data)
+```
+```{r}
+Melt_data = melt(cast_data, id = c("OBS", "NAME", "ID", "DATE"))
+Melt_data = na.omit(Melt_data)
+Melt_data
+```
+
+
+```{r}
+
+## Merging data in R
+
+
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
